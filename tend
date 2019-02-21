@@ -11,6 +11,8 @@ if [ "$#" -eq "0" ]; then
     echo "    ls [entity id]"
     echo "    fa - find an entity by alias"
     echo "    fa [name]"
+    echo "    fs - find a snippet by string"
+    echo "    fs [string]"
     echo "    ae - add an entity"
     echo "    ae [name]"
     echo "    aa - add an alias to an entity"
@@ -32,7 +34,7 @@ else
             if [ "$#" -eq "2" ]; then
                 entity_id="$2"
             else
-                printf "enter entity id:"
+                printf "enter entity id: "
                 read -r entity_id
             fi
             psql -d tend -c "select name, updated from alias where entity_id = ${entity_id};"
@@ -42,7 +44,7 @@ else
             if [ "$#" -eq "2" ]; then
                 entity_id="$2"
             else
-                printf "enter entity id:"
+                printf "enter entity id: "
                 read -r entity_id
             fi
             psql -d tend -c "select data, updated from snippet where entity_id = ${entity_id};"
@@ -52,17 +54,27 @@ else
             if [ "$#" -eq "2" ]; then
                 name="$2"
             else
-                printf "enter name:"
+                printf "enter name: "
                 read -r name
             fi
             psql -d tend -c "select name, entity_id, updated from alias where name like '%${name}%';"
+            ;;
+        "fs")
+            echo "--find snippet--"
+            if [ "$#" -eq "2" ]; then
+                string="$2"
+            else
+                printf "enter string: "
+                read -r string
+            fi
+            psql -d tend -c "select data, entity_id, updated from snippet where data like '%${string}%';"
             ;;
         "ae")
             echo "--add entity--"
             if [ "$#" -eq "2" ]; then
                 name="$2"
             else
-                printf "enter name:"
+                printf "enter name: "
                 read -r name
             fi
             psql -d tend -c "insert into entity default values;
@@ -75,12 +87,12 @@ else
                 name="$3"
             elif [ "$#" -eq "2" ]; then
                 id="$2"
-                printf "enter name:"
+                printf "enter name: "
                 read -r name
             else
-                printf "enter id:"
+                printf "enter id: "
                 read -r id
-                printf "enter name:"
+                printf "enter name: "
                 read -r name
             fi
             psql -d tend -c "insert into alias (name, entity_id) values ('${name}', ${id});"
@@ -90,7 +102,7 @@ else
             if [ "$#" -eq "2" ]; then
                 id="$2"
             else
-                printf "enter id:"
+                printf "enter id: "
                 read -r id
             fi
             #no this isnt security yes i know you can do sql injections here (youre running this locally you have a damn shell)
