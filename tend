@@ -1,0 +1,45 @@
+#!/usr/bin/bash
+if [ "$#" -eq "0" ]; then
+    echo "--tend--"
+    echo "    tend command [arguments, ...]"
+    echo "commands:"
+    echo "    le - list all entities"
+    echo "    la - list all aliases for an entity"
+    echo "    fe - find an entity by id"
+    echo "    ae - add an entity"
+    echo "    aa - add an alias to an entity"
+else
+    case $1 in
+        "le")
+            echo "--list all entities--"
+            if [ "$#" -eq "2" ]; then
+                psql -d tend -c "select id from entity;"
+            fi
+            ;;
+        "la")
+            echo "--list all aliases--"
+            if [ "$#" -eq "2" ]; then
+                entity_id="$2"
+            else
+                printf "enter entity id:"
+                read -r entity_id
+            fi
+            psql -d tend -c "select name from alias where entity_id = ${entity_id};"
+            ;;
+        "fe")
+            echo "--find entity--"
+            psql -d tend -c "select id from entity;"
+            ;;
+        "ae")
+            echo "--add entity--"
+            psql -d tend -c "select id from entity;"
+            ;;
+        "aa")
+            echo "--add alias--"
+            ;;
+        *)
+            echo "unknown option $1"
+            $0
+            ;;
+    esac
+fi
