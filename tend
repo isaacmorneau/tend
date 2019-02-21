@@ -7,12 +7,16 @@ if [ "$#" -eq "0" ]; then
     echo "    le [id]"
     echo "    la - list all aliases for an entity"
     echo "    la [entity id]"
+    echo "    ls - list all snippets for an entity"
+    echo "    ls [entity id]"
     echo "    fa - find an entity by alias"
     echo "    fa [name]"
     echo "    ae - add an entity"
     echo "    ae [name]"
     echo "    aa - add an alias to an entity"
     echo "    aa [id] [name]"
+    echo "    as - add snippet to an entity"
+    echo "    as [id]"
 else
     case $1 in
         "le")
@@ -32,6 +36,16 @@ else
                 read -r entity_id
             fi
             psql -d tend -c "select name, updated from alias where entity_id = ${entity_id};"
+            ;;
+        "ls")
+            echo "--list all snippets--"
+            if [ "$#" -eq "2" ]; then
+                entity_id="$2"
+            else
+                printf "enter entity id:"
+                read -r entity_id
+            fi
+            psql -d tend -c "select data, updated from snippet where entity_id = ${entity_id};"
             ;;
         "fa")
             echo "--find entity--"
@@ -69,8 +83,20 @@ else
                 printf "enter name:"
                 read -r name
             fi
-            psql -d tend -c "insert into entity default values;
-                            insert into alias (name, entity_id) values ('${name}', lastval());"
+            psql -d tend -c "insert into alias (name, entity_id) values ('${name}', ${id});"
+            ;;
+        "as")
+            echo "--add snippet--"
+            if [ "$#" -eq "2" ]; then
+                id="$2"
+            else
+                printf "enter id:"
+                read -r id
+            fi
+            #no this isnt security yes i know you can do sql injections here (youre running this locally you have a damn shell)
+            #this this is because i dont want to have to sanitize it manually if i want to say shove json into the db
+            data=$(sed -r "s/'/\\\\'/g" </dev/stdin)
+            psql -d tend -c "insert into snippet (data,entity_id) values ('${data}', ${id});"
             ;;
         *)
             echo "unknown option $1"
