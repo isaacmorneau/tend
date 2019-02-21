@@ -87,7 +87,7 @@ else
                 printf "enter name: "
                 read -r name
             fi
-            psql -d tend -c "insert into entity default values returning id; insert into alias (name) values ('${name}') returning id;"
+            psql -d tend -c "insert into entity default values; insert into alias (name) values ('${name}');select currval('entity_id_seq');"
             ;;
         "aa")
             echo "--add alias--"
