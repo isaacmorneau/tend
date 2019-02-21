@@ -23,6 +23,10 @@ if [ "$#" -eq "0" ]; then
     echo "    ea [id]"
     echo "    es - edit a snippet"
     echo "    es [id]"
+    echo "    da - delete an entity"
+    echo "    da [id]"
+    echo "    ds - delete a snippet"
+    echo "    ds [id]"
 else
     case $1 in
         "le")
