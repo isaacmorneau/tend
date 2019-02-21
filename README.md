@@ -27,7 +27,9 @@ commands:
     ea [id]
     es - edit a snippet
     es [id]
-    da - delete an entity
+    de - delete an entity
+    de [id]
+    da - delete an alias
     da [id]
     ds - delete a snippet
     ds [id]
@@ -40,3 +42,5 @@ all the commands arguments in `[ ]` are optional and will be prompted for
 - postgresql installed and running locally
 - a database named tend
 - your user is allowed to access it
+
+then just run the sql file
