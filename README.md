@@ -23,6 +23,14 @@ commands:
     aa [id] [name]
     as - add snippet to an entity
     as [id]
+    ea - edit an entity
+    ea [id]
+    es - edit a snippet
+    es [id]
+    da - delete an entity
+    da [id]
+    ds - delete a snippet
+    ds [id]
 ```
 
 all the commands arguments in `[ ]` are optional and will be prompted for
