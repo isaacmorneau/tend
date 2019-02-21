@@ -19,6 +19,10 @@ if [ "$#" -eq "0" ]; then
     echo "    aa [id] [name]"
     echo "    as - add snippet to an entity"
     echo "    as [id]"
+    echo "    ea - edit an entity"
+    echo "    ea [id]"
+    echo "    es - edit a snippet"
+    echo "    es [id]"
 else
     case $1 in
         "le")
@@ -37,7 +41,7 @@ else
                 printf "enter entity id: "
                 read -r entity_id
             fi
-            psql -d tend -c "select name, updated from alias where entity_id = ${entity_id};"
+            psql -d tend -c "select name, id, updated from alias where entity_id = ${entity_id};"
             ;;
         "ls")
             echo "--list all snippets--"
@@ -47,7 +51,7 @@ else
                 printf "enter entity id: "
                 read -r entity_id
             fi
-            psql -d tend -c "select data, updated from snippet where entity_id = ${entity_id};"
+            psql -d tend -c "select data, id, updated from snippet where entity_id = ${entity_id};"
             ;;
         "fa")
             echo "--find entity--"
@@ -57,7 +61,7 @@ else
                 printf "enter name: "
                 read -r name
             fi
-            psql -d tend -c "select name, entity_id, updated from alias where name like '%${name}%';"
+            psql -d tend -c "select name, id, entity_id, updated from alias where name like '%${name}%';"
             ;;
         "fs")
             echo "--find snippet--"
@@ -67,7 +71,7 @@ else
                 printf "enter string: "
                 read -r string
             fi
-            psql -d tend -c "select data, entity_id, updated from snippet where data like '%${string}%';"
+            psql -d tend -c "select data, id, entity_id, updated from snippet where data like '%${string}%';"
             ;;
         "ae")
             echo "--add entity--"
@@ -108,6 +112,37 @@ else
             #this this is because i dont want to have to sanitize it manually if i want to say shove json into the db
             data=$(sed -r "s/'/\\\\'/g" </dev/stdin)
             psql -d tend -c "insert into snippet (data,entity_id) values ('${data}', ${id});"
+            ;;
+        "ea")
+            echo "--edit alias--"
+            if [ "$#" -eq "3" ]; then
+                id="$2"
+                string="$3"
+                psql -d tend -c "update alias set name = '${string}' where id = ${id};"
+            else
+                if [ "$#" -eq "2" ]; then
+                    id="$2"
+                else
+                    printf "enter id: "
+                    read -r id
+                fi
+                psql -d tend -c "select name, id, entity_id, updated from alias where id = ${id};"
+                printf "enter new alias: "
+                read -r string
+                psql -d tend -c "update alias set name = '${string}' where id = ${id};"
+            fi
+            ;;
+        "es")
+            echo "--edit snippet--"
+            if [ "$#" -eq "2" ]; then
+                id="$2"
+            else
+                printf "enter id: "
+                read -r id
+            fi
+            psql -d tend -c "select data, id, entity_id, updated from snippet where id = ${id};"
+            data=$(sed -r "s/'/\\\\'/g" </dev/stdin)
+            psql -d tend -c "update snippet set data = '${data}' where id = ${id};"
             ;;
         *)
             echo "unknown option $1"
