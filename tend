@@ -23,7 +23,9 @@ if [ "$#" -eq "0" ]; then
     echo "    ea [id]"
     echo "    es - edit a snippet"
     echo "    es [id]"
-    echo "    da - delete an entity"
+    echo "    de - delete an entity"
+    echo "    de [id]"
+    echo "    da - delete an alias"
     echo "    da [id]"
     echo "    ds - delete a snippet"
     echo "    ds [id]"
@@ -78,14 +80,14 @@ else
             psql -d tend -c "select data, id, entity_id, updated from snippet where data like '%${string}%';"
             ;;
         "ae")
-            echo "--add entity--"
+            echo "--add entity and alias--"
             if [ "$#" -eq "2" ]; then
                 name="$2"
             else
                 printf "enter name: "
                 read -r name
             fi
-            psql -d tend -c "insert into entity default values; insert into alias (name) values ('${name}');"
+            psql -d tend -c "insert into entity default values returning id; insert into alias (name) values ('${name}') returning id;"
             ;;
         "aa")
             echo "--add alias--"
@@ -102,7 +104,7 @@ else
                 printf "enter name: "
                 read -r name
             fi
-            psql -d tend -c "insert into alias (name, entity_id) values ('${name}', ${id});"
+            psql -d tend -c "insert into alias (name, entity_id) values ('${name}', ${id}) returning id;"
             ;;
         "as")
             echo "--add snippet--"
@@ -115,7 +117,7 @@ else
             #no this isnt security yes i know you can do sql injections here (youre running this locally you have a damn shell)
             #this this is because i dont want to have to sanitize it manually if i want to say shove json into the db
             data=$(sed -r "s/'/\\\\'/g" </dev/stdin)
-            psql -d tend -c "insert into snippet (data,entity_id) values ('${data}', ${id});"
+            psql -d tend -c "insert into snippet (data,entity_id) values ('${data}', ${id}) returning id;"
             ;;
         "ea")
             echo "--edit alias--"
@@ -148,6 +150,16 @@ else
             #see above rant
             data=$(sed -r "s/'/\\\\'/g" </dev/stdin)
             psql -d tend -c "update snippet set data = '${data}' where id = ${id};"
+            ;;
+        "de")
+            echo "--delete entity--"
+            if [ "$#" -eq "2" ]; then
+                id="$2"
+            else
+                printf "enter id: "
+                read -r id
+            fi
+            psql -d tend -c "delete from entity where id = ${id};"
             ;;
         "da")
             echo "--delete alias--"
