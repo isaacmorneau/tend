@@ -23,7 +23,7 @@ create table snippet (
     entity_id integer references entity(id),
     data text,
     created timestamp not null default now(),
-    updated timestamp not null
+    updated timestamp not null default now()
 );
 
 create trigger set_timestamp
@@ -38,7 +38,7 @@ create table alias (
     entity_id integer references entity(id),
     name varchar(256),
     created timestamp not null default now(),
-    updated timestamp not null
+    updated timestamp not null default now()
 );
 
 create trigger set_timestamp

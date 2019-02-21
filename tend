@@ -4,16 +4,23 @@ if [ "$#" -eq "0" ]; then
     echo "    tend command [arguments, ...]"
     echo "commands:"
     echo "    le - list all entities"
+    echo "    le [id]"
     echo "    la - list all aliases for an entity"
-    echo "    fe - find an entity by id"
+    echo "    la [entity id]"
+    echo "    fa - find an entity by alias"
+    echo "    fa [name]"
     echo "    ae - add an entity"
+    echo "    ae [name]"
     echo "    aa - add an alias to an entity"
+    echo "    aa [id] [name]"
 else
     case $1 in
         "le")
             echo "--list all entities--"
             if [ "$#" -eq "2" ]; then
-                psql -d tend -c "select id from entity;"
+                psql -d tend -c "select * from entity where id = ${2};"
+            else
+                psql -d tend -c "select * from entity;"
             fi
             ;;
         "la")
@@ -24,18 +31,46 @@ else
                 printf "enter entity id:"
                 read -r entity_id
             fi
-            psql -d tend -c "select name from alias where entity_id = ${entity_id};"
+            psql -d tend -c "select name, updated from alias where entity_id = ${entity_id};"
             ;;
-        "fe")
+        "fa")
             echo "--find entity--"
-            psql -d tend -c "select id from entity;"
+            if [ "$#" -eq "2" ]; then
+                name="$2"
+            else
+                printf "enter name:"
+                read -r name
+            fi
+            psql -d tend -c "select name, entity_id, updated from alias where name like '%${name}%';"
             ;;
         "ae")
             echo "--add entity--"
-            psql -d tend -c "select id from entity;"
+            if [ "$#" -eq "2" ]; then
+                name="$2"
+            else
+                printf "enter name:"
+                read -r name
+            fi
+            psql -d tend -c "insert into entity default values;
+                            insert into alias (name, entity_id) values ('${name}', lastval());"
             ;;
         "aa")
             echo "--add alias--"
+            if [ "$#" -eq "3" ]; then
+                id="$2"
+                name="$3"
+            elif [ "$#" -eq "2" ]; then
+                id="$2"
+                printf "enter name:"
+                read -r name
+            else
+                printf "enter id:"
+                read -r id
+                printf "enter name:"
+                read -r name
+            fi
+            psql -d tend -c "insert into entity default values;
+                            insert into alias (name, entity_id) values ('${name}', lastval());"
             ;;
         *)
             echo "unknown option $1"
