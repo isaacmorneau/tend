@@ -141,8 +141,29 @@ else
                 read -r id
             fi
             psql -d tend -c "select data, id, entity_id, updated from snippet where id = ${id};"
+            #see above rant
             data=$(sed -r "s/'/\\\\'/g" </dev/stdin)
             psql -d tend -c "update snippet set data = '${data}' where id = ${id};"
+            ;;
+        "da")
+            echo "--delete alias--"
+            if [ "$#" -eq "2" ]; then
+                id="$2"
+            else
+                printf "enter id: "
+                read -r id
+            fi
+            psql -d tend -c "delete from alias where id = ${id};"
+            ;;
+        "ds")
+            echo "--delete snippet--"
+            if [ "$#" -eq "2" ]; then
+                id="$2"
+            else
+                printf "enter id: "
+                read -r id
+            fi
+            psql -d tend -c "delete from snippet where id = ${id};"
             ;;
         *)
             echo "unknown option $1"
