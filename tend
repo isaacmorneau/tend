@@ -8,10 +8,10 @@ if [ "$#" -eq "0" ]; then
     echo "--tend--"
     echo "    tend command [arguments, ...]"
     echo "commands:"
-    echo "    ll - list long"
-    echo "    ll"
-    echo "    le - list all entities"
+    echo "    le - list entity"
     echo "    le [id]"
+    echo "    lel - list entity long"
+    echo "    lel [id]"
     echo "    la - list all aliases for an entity"
     echo "    la [entity id]"
     echo "    ls - list all snippets for an entity"
@@ -40,16 +40,35 @@ if [ "$#" -eq "0" ]; then
     echo "    ds [id]"
 else
     case $1 in
-        "ll")
-            echo "--list long--"
-            $TENDPSQL -c "select id, (select string_agg(name, ', ' order by name) from alias where entity_id = entity.id) as aliases, created from entity order by 1;"
-            ;;
         "le")
-            echo "--list all entities--"
+            echo "--list entity--"
             if [ "$#" -eq "2" ]; then
+                id="$2"
                 $TENDPSQL -c "select * from entity where id = ${2};"
             else
                 $TENDPSQL -c "select * from entity;"
+            fi
+            ;;
+        "lel")
+            echo "--list entity long--"
+            if [ "$#" -eq "2" ]; then
+                id="$2"
+                $TENDPSQL -c "select id,
+                                (select count(*) from alias where entity_id = entity.id) as total_aliases,
+                                (select count(*) from snippet where entity_id = entity.id) as total_snippets,
+                                (select string_agg(name, ', ' order by name) from alias where entity_id = entity.id limit 4) as aliases,
+                                created
+                            from entity
+                            where id = ${id}
+                            order by 1;"
+            else
+                $TENDPSQL -c "select id,
+                                (select count(*) from alias where entity_id = entity.id) as total_aliases,
+                                (select count(*) from snippet where entity_id = entity.id) as total_snippets,
+                                (select string_agg(name, ', ' order by name) from alias where entity_id = entity.id limit 4) as aliases,
+                                created
+                            from entity
+                            order by 1;"
             fi
             ;;
         "la")
@@ -60,7 +79,11 @@ else
                 printf "enter entity id: "
                 read -r entity_id
             fi
-            $TENDPSQL -c "select name, id, updated from alias where entity_id = ${entity_id};"
+            $TENDPSQL -c "select name,
+                            id,
+                            updated
+                        from alias
+                        where entity_id = ${entity_id};"
             ;;
         "ls")
             echo "--list all snippets--"
@@ -70,7 +93,11 @@ else
                 printf "enter entity id: "
                 read -r entity_id
             fi
-            $TENDPSQL -c "select data as snippet, id, updated from snippet where entity_id = ${entity_id};"
+            $TENDPSQL -c "select data as snippet,
+                            id,
+                            updated
+                        from snippet
+                        where entity_id = ${entity_id};"
             ;;
         "fa")
             echo "--find entity--"
@@ -80,7 +107,13 @@ else
                 printf "enter name: "
                 read -r name
             fi
-            $TENDPSQL -c "select name, id, entity_id, updated from alias where name like '%${name}%' order by name;"
+            $TENDPSQL -c "select name,
+                            id,
+                            entity_id,
+                            updated
+                        from alias
+                        where name like '%${name}%'
+                        order by name;"
             ;;
         "fal")
             echo "--find entity--"
@@ -90,9 +123,19 @@ else
                 printf "enter name: "
                 read -r name
             fi
-            $TENDPSQL -c "select a.name, a.id, a.entity_id,
-            (select string_agg(b.name, ', ' order by b.name) from alias b where a.entity_id = b.entity_id and a.id != b.id) as other_aliases,
-            a.updated from alias a where a.name like '%${name}%' order by a.name;"
+            $TENDPSQL -c "select a.name,
+                            a.id,
+                            a.entity_id,
+                            (
+                                select string_agg(b.name, ', ' order by b.name)
+                                from alias b
+                                where a.entity_id = b.entity_id
+                                    and a.id != b.id
+                            ) as other_aliases,
+                            a.updated
+                        from alias a
+                        where a.name like '%${name}%'
+                        order by a.name;"
             ;;
         "fs")
             echo "--find snippet--"
@@ -102,7 +145,12 @@ else
                 printf "enter string: "
                 read -r string
             fi
-            $TENDPSQL -c "select data as snippet, id, entity_id, updated from snippet where data like '%${string}%';"
+            $TENDPSQL -c "select data as snippet,
+                            id,
+                            entity_id,
+                            updated
+                        from snippet
+                        where data like '%${string}%';"
             ;;
         "ae")
             echo "--add entity and alias--"
@@ -112,7 +160,9 @@ else
                 printf "enter name: "
                 read -r name
             fi
-            $TENDPSQL -c "insert into entity default values; insert into alias (name) values ('${name}');select currval('entity_id_seq');"
+            $TENDPSQL -c "insert into entity default values;
+                            insert into alias (name) values ('${name}');
+                            select currval('entity_id_seq');"
             ;;
         "aa")
             echo "--add alias--"
@@ -157,7 +207,12 @@ else
                     printf "enter id: "
                     read -r id
                 fi
-                $TENDPSQL -c "select name, id, entity_id, updated from alias where id = ${id};"
+                $TENDPSQL -c "select name,
+                                id,
+                                entity_id,
+                                updated
+                            from alias
+                            where id = ${id};"
                 printf "enter new alias: "
                 read -r string
                 $TENDPSQL -c "update alias set name = '${string}' where id = ${id};"
@@ -171,7 +226,12 @@ else
                 printf "enter id: "
                 read -r id
             fi
-            $TENDPSQL -c "select data as snippet, id, entity_id, updated from snippet where id = ${id};"
+            $TENDPSQL -c "select data as snippet,
+                            id,
+                            entity_id,
+                            updated
+                        from snippet
+                        where id = ${id};"
             #see above rant
             data=$(sed -r "s/'/\\\\'/g" </dev/stdin)
             $TENDPSQL -c "update snippet set data = '${data}' where id = ${id};"
