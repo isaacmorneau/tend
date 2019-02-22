@@ -54,18 +54,18 @@ else
             if [ "$#" -eq "2" ]; then
                 id="$2"
                 $TENDPSQL -c "select id,
-                                (select count(*) from alias where entity_id = entity.id) as total_aliases,
-                                (select count(*) from snippet where entity_id = entity.id) as total_snippets,
-                                (select string_agg(name, ', ' order by name) from alias where entity_id = entity.id limit 4) as aliases,
+                                (select string_agg(name, ', ' order by name) from alias where entity_id = entity.id limit 4) as alias_list,
+                                (select count(*) from alias where entity_id = entity.id) as aliases,
+                                (select count(*) from snippet where entity_id = entity.id) as snippets,
                                 created
                             from entity
                             where id = ${id}
                             order by 1;"
             else
                 $TENDPSQL -c "select id,
-                                (select count(*) from alias where entity_id = entity.id) as total_aliases,
-                                (select count(*) from snippet where entity_id = entity.id) as total_snippets,
-                                (select string_agg(name, ', ' order by name) from alias where entity_id = entity.id limit 4) as aliases,
+                                (select string_agg(name, ', ' order by name) from alias where entity_id = entity.id limit 4) as alias_list,
+                                (select count(*) from alias where entity_id = entity.id) as aliases,
+                                (select count(*) from snippet where entity_id = entity.id) as snippets,
                                 created
                             from entity
                             order by 1;"
