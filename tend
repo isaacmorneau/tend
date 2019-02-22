@@ -18,6 +18,8 @@ if [ "$#" -eq "0" ]; then
     echo "    ls [entity id]"
     echo "    fa - find an entity by alias"
     echo "    fa [name]"
+    echo "    fal - find an entity by alias long"
+    echo "    fal [name]"
     echo "    fs - find a snippet by string"
     echo "    fs [string]"
     echo "    ae - add an entity"
@@ -79,6 +81,18 @@ else
                 read -r name
             fi
             $TENDPSQL -c "select name, id, entity_id, updated from alias where name like '%${name}%' order by name;"
+            ;;
+        "fal")
+            echo "--find entity--"
+            if [ "$#" -eq "2" ]; then
+                name="$2"
+            else
+                printf "enter name: "
+                read -r name
+            fi
+            $TENDPSQL -c "select a.name, a.id, a.entity_id,
+            (select string_agg(b.name, ', ' order by b.name) from alias b where a.entity_id = b.entity_id and a.id != b.id) as other_aliases,
+            a.updated from alias a where a.name like '%${name}%' order by a.name;"
             ;;
         "fs")
             echo "--find snippet--"
