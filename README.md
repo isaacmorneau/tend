@@ -7,6 +7,8 @@ a super simple bash wrapper so i can take notes
 --tend--
     tend command [arguments, ...]
 commands:
+    ll - list long
+    ll
     le - list all entities
     le [id]
     la - list all aliases for an entity
@@ -40,7 +42,8 @@ all the commands arguments in `[ ]` are optional and will be prompted for
 ## prerequisites
 
 - postgresql installed and running locally
-- a database named tend
 - your user is allowed to access it
 
-then just run the sql file
+
+just runing the sql file in a database titled tend will work fine
+otherwise TENDPSQL can be set to override the connection command as needed
