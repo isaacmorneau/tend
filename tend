@@ -42,7 +42,7 @@ else
     case $1 in
         "ll")
             echo "--list long--"
-            $TENDPSQL -c "select entity_id as id, string_agg(name, ', ' order by name) as aliases from alias group by 1 order by 1;"
+            $TENDPSQL -c "select id, (select string_agg(name, ', ' order by name) from alias where entity_id = entity.id) as aliases, created from entity order by 1;"
             ;;
         "le")
             echo "--list all entities--"
