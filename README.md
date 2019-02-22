@@ -37,7 +37,7 @@ commands:
 
 all the commands arguments in `[ ]` are optional and will be prompted for
 
-## prerequisits
+## prerequisites
 
 - postgresql installed and running locally
 - a database named tend
