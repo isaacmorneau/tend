@@ -1,4 +1,9 @@
 #!/usr/bin/bash
+#allow the overwrite of the database and the command
+if [ -z "$TENDPSQL" ]; then
+    TENDPSQL="psql -d tend -P pager=off"
+fi
+
 if [ "$#" -eq "0" ]; then
     echo "--tend--"
     echo "    tend command [arguments, ...]"
@@ -34,9 +39,9 @@ else
         "le")
             echo "--list all entities--"
             if [ "$#" -eq "2" ]; then
-                psql -d tend -c "select * from entity where id = ${2};"
+                $TENDPSQL -c "select * from entity where id = ${2};"
             else
-                psql -d tend -c "select * from entity;"
+                $TENDPSQL -c "select * from entity;"
             fi
             ;;
         "la")
@@ -47,7 +52,7 @@ else
                 printf "enter entity id: "
                 read -r entity_id
             fi
-            psql -d tend -c "select name, id, updated from alias where entity_id = ${entity_id};"
+            $TENDPSQL -c "select name, id, updated from alias where entity_id = ${entity_id};"
             ;;
         "ls")
             echo "--list all snippets--"
@@ -57,7 +62,7 @@ else
                 printf "enter entity id: "
                 read -r entity_id
             fi
-            psql -d tend -c "select data, id, updated from snippet where entity_id = ${entity_id};"
+            $TENDPSQL -c "select data, id, updated from snippet where entity_id = ${entity_id};"
             ;;
         "fa")
             echo "--find entity--"
@@ -67,7 +72,7 @@ else
                 printf "enter name: "
                 read -r name
             fi
-            psql -d tend -c "select name, id, entity_id, updated from alias where name like '%${name}%';"
+            $TENDPSQL -c "select name, id, entity_id, updated from alias where name like '%${name}%';"
             ;;
         "fs")
             echo "--find snippet--"
@@ -77,7 +82,7 @@ else
                 printf "enter string: "
                 read -r string
             fi
-            psql -d tend -c "select data, id, entity_id, updated from snippet where data like '%${string}%';"
+            $TENDPSQL -c "select data, id, entity_id, updated from snippet where data like '%${string}%';"
             ;;
         "ae")
             echo "--add entity and alias--"
@@ -87,7 +92,7 @@ else
                 printf "enter name: "
                 read -r name
             fi
-            psql -d tend -c "insert into entity default values; insert into alias (name) values ('${name}');select currval('entity_id_seq');"
+            $TENDPSQL -c "insert into entity default values; insert into alias (name) values ('${name}');select currval('entity_id_seq');"
             ;;
         "aa")
             echo "--add alias--"
@@ -104,7 +109,7 @@ else
                 printf "enter name: "
                 read -r name
             fi
-            psql -d tend -c "insert into alias (name, entity_id) values ('${name}', ${id}) returning id;"
+            $TENDPSQL -c "insert into alias (name, entity_id) values ('${name}', ${id}) returning id;"
             ;;
         "as")
             echo "--add snippet--"
@@ -117,14 +122,14 @@ else
             #no this isnt security yes i know you can do sql injections here (youre running this locally you have a damn shell)
             #this this is because i dont want to have to sanitize it manually if i want to say shove json into the db
             data=$(sed -r "s/'/\\\\'/g" </dev/stdin)
-            psql -d tend -c "insert into snippet (data,entity_id) values ('${data}', ${id}) returning id;"
+            $TENDPSQL -c "insert into snippet (data,entity_id) values ('${data}', ${id}) returning id;"
             ;;
         "ea")
             echo "--edit alias--"
             if [ "$#" -eq "3" ]; then
                 id="$2"
                 string="$3"
-                psql -d tend -c "update alias set name = '${string}' where id = ${id};"
+                $TENDPSQL -c "update alias set name = '${string}' where id = ${id};"
             else
                 if [ "$#" -eq "2" ]; then
                     id="$2"
@@ -132,10 +137,10 @@ else
                     printf "enter id: "
                     read -r id
                 fi
-                psql -d tend -c "select name, id, entity_id, updated from alias where id = ${id};"
+                $TENDPSQL -c "select name, id, entity_id, updated from alias where id = ${id};"
                 printf "enter new alias: "
                 read -r string
-                psql -d tend -c "update alias set name = '${string}' where id = ${id};"
+                $TENDPSQL -c "update alias set name = '${string}' where id = ${id};"
             fi
             ;;
         "es")
@@ -146,10 +151,10 @@ else
                 printf "enter id: "
                 read -r id
             fi
-            psql -d tend -c "select data, id, entity_id, updated from snippet where id = ${id};"
+            $TENDPSQL -c "select data, id, entity_id, updated from snippet where id = ${id};"
             #see above rant
             data=$(sed -r "s/'/\\\\'/g" </dev/stdin)
-            psql -d tend -c "update snippet set data = '${data}' where id = ${id};"
+            $TENDPSQL -c "update snippet set data = '${data}' where id = ${id};"
             ;;
         "de")
             echo "--delete entity--"
@@ -159,7 +164,7 @@ else
                 printf "enter id: "
                 read -r id
             fi
-            psql -d tend -c "delete from entity where id = ${id};"
+            $TENDPSQL -c "delete from entity where id = ${id};"
             ;;
         "da")
             echo "--delete alias--"
@@ -169,7 +174,7 @@ else
                 printf "enter id: "
                 read -r id
             fi
-            psql -d tend -c "delete from alias where id = ${id};"
+            $TENDPSQL -c "delete from alias where id = ${id};"
             ;;
         "ds")
             echo "--delete snippet--"
@@ -179,7 +184,7 @@ else
                 printf "enter id: "
                 read -r id
             fi
-            psql -d tend -c "delete from snippet where id = ${id};"
+            $TENDPSQL -c "delete from snippet where id = ${id};"
             ;;
         *)
             echo "unknown option $1"
