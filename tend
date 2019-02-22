@@ -8,6 +8,8 @@ if [ "$#" -eq "0" ]; then
     echo "--tend--"
     echo "    tend command [arguments, ...]"
     echo "commands:"
+    echo "    ll - list long"
+    echo "    ll"
     echo "    le - list all entities"
     echo "    le [id]"
     echo "    la - list all aliases for an entity"
@@ -36,6 +38,10 @@ if [ "$#" -eq "0" ]; then
     echo "    ds [id]"
 else
     case $1 in
+        "ll")
+            echo "--list long--"
+            $TENDPSQL -c "select entity_id as id, string_agg(name, ', ' order by name) as aliases from alias group by 1 order by 1;"
+            ;;
         "le")
             echo "--list all entities--"
             if [ "$#" -eq "2" ]; then
@@ -62,7 +68,7 @@ else
                 printf "enter entity id: "
                 read -r entity_id
             fi
-            $TENDPSQL -c "select data, id, updated from snippet where entity_id = ${entity_id};"
+            $TENDPSQL -c "select data as snippet, id, updated from snippet where entity_id = ${entity_id};"
             ;;
         "fa")
             echo "--find entity--"
@@ -72,7 +78,7 @@ else
                 printf "enter name: "
                 read -r name
             fi
-            $TENDPSQL -c "select name, id, entity_id, updated from alias where name like '%${name}%';"
+            $TENDPSQL -c "select name, id, entity_id, updated from alias where name like '%${name}%' order by name;"
             ;;
         "fs")
             echo "--find snippet--"
@@ -82,7 +88,7 @@ else
                 printf "enter string: "
                 read -r string
             fi
-            $TENDPSQL -c "select data, id, entity_id, updated from snippet where data like '%${string}%';"
+            $TENDPSQL -c "select data as snippet, id, entity_id, updated from snippet where data like '%${string}%';"
             ;;
         "ae")
             echo "--add entity and alias--"
@@ -151,7 +157,7 @@ else
                 printf "enter id: "
                 read -r id
             fi
-            $TENDPSQL -c "select data, id, entity_id, updated from snippet where id = ${id};"
+            $TENDPSQL -c "select data as snippet, id, entity_id, updated from snippet where id = ${id};"
             #see above rant
             data=$(sed -r "s/'/\\\\'/g" </dev/stdin)
             $TENDPSQL -c "update snippet set data = '${data}' where id = ${id};"
