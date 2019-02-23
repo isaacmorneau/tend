@@ -8,6 +8,8 @@ if [ "$#" -eq "0" ]; then
     echo "--tend--"
     echo "    tend command [arguments, ...]"
     echo "commands:"
+    echo "    qs - quick stats"
+    echo "    qs"
     echo "    le - list entity"
     echo "    le [id]"
     echo "    lel - list entity long"
@@ -40,6 +42,11 @@ if [ "$#" -eq "0" ]; then
     echo "    ds [id]"
 else
     case $1 in
+        "qs")
+            $TENDPSQL -c "select count(*) as total_entities from entity;"
+            $TENDPSQL -c "select count(*) as total_aliases from alias;"
+            $TENDPSQL -c "select count(*) as total_snippets from snippet;"
+            ;;
         "le")
             echo "--list entity--"
             if [ "$#" -eq "2" ]; then

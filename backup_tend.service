@@ -1,0 +1,6 @@
+[Unit]
+Description=Backup tend databases
+
+[Service]
+Type=oneshot
+ExecStart=/home/isaac/code/tend/backup_tend
