@@ -191,7 +191,7 @@ else
             fi
             #no this isnt security yes i know you can do sql injections here (youre running this locally you have a damn shell)
             #this this is because i dont want to have to sanitize it manually if i want to say shove json into the db
-            data=$(sed -r "s/'/\\\\'/g" </dev/stdin)
+            data=$(sed -r "s/'/''/g" </dev/stdin)
             $TENDPSQL -c "insert into snippet (data,entity_id) values ('${data}', ${id}) returning id;"
             ;;
         "ea")
@@ -233,7 +233,7 @@ else
                         from snippet
                         where id = ${id};"
             #see above rant
-            data=$(sed -r "s/'/\\\\'/g" </dev/stdin)
+            data=$(sed -r "s/'/''/g" </dev/stdin)
             $TENDPSQL -c "update snippet set data = '${data}' where id = ${id};"
             ;;
         "de")
