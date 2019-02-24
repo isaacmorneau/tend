@@ -7,16 +7,20 @@ a super simple bash wrapper so i can take notes
 --tend--
     tend command [arguments, ...]
 commands:
-    ll - list long
-    ll
-    le - list all entities
+    qs - quick stats
+    qs
+    le - list entity
     le [id]
+    lel - list entity long
+    lel [id]
     la - list all aliases for an entity
     la [entity id]
     ls - list all snippets for an entity
     ls [entity id]
     fa - find an entity by alias
     fa [name]
+    fal - find an entity by alias long
+    fal [name]
     fs - find a snippet by string
     fs [string]
     ae - add an entity
