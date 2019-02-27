@@ -1,10 +1,14 @@
 #!/usr/bin/bash
-filename="/mnt/sda/tend/tend_$(date '+%Y_%m_%d').sql.gz"
-echo "generating backup $filename"
-pg_dump -d tend | gzip > $filename && echo "done" || echo "ERROR unable to generate backup!"
+if [[ $EUID -ne 0 ]]; then
+    filename="/mnt/sda/tend/tend_$(date '+%Y_%m_%d').sql.gz"
+    echo "generating backup $filename"
+    pg_dump -d tend | gzip > $filename && echo "done" || echo "ERROR unable to generate backup!"
 
-if [ -f "$filename" ]; then
-    echo "copying backup to additional servers"
-    scp $filename elly:~/tend/ && echo "done" || echo "ERROR unable to copy backup!"
+    if [ -f "$filename" ]; then
+        echo "copying backup to additional servers"
+        scp $filename elly:~/tend/ && echo "done" || echo "ERROR unable to copy backup!"
+    fi
+else
+    sudo su isaac $0
 fi
 
