@@ -10,6 +10,7 @@ if [ "$#" -eq "0" ]; then
     echo "commands:"
     echo "    qs - quick stats"
     echo "    qs"
+    echo "  listing:"
     echo "    le - list entity"
     echo "    le [id]"
     echo "    lel - list entity long"
@@ -22,6 +23,9 @@ if [ "$#" -eq "0" ]; then
     echo "    lrl [id]"
     echo "    ls - list all snippets for an entity"
     echo "    ls [entity id]"
+    echo "    lrs - list all relation snippets for a relation"
+    echo "    lrs [id]"
+    echo "  searching:"
     echo "    fa - find an entity by alias"
     echo "    fa [name]"
     echo "    fal - find an entity by alias long"
@@ -34,6 +38,7 @@ if [ "$#" -eq "0" ]; then
     echo "    frl [entity id]"
     echo "    frs - find a relation snippet by string"
     echo "    frs [string]"
+    echo "  adding:"
     echo "    ae - add an entity"
     echo "    ae [name]"
     echo "    aa - add an alias to an entity"
@@ -44,10 +49,14 @@ if [ "$#" -eq "0" ]; then
     echo "    ars [id]"
     echo "    as - add snippet to an entity"
     echo "    as [id]"
+    echo "  editing:"
     echo "    ea - edit an entity"
     echo "    ea [id]"
     echo "    es - edit a snippet"
     echo "    es [id]"
+    echo "    ers - edit a relation snippet"
+    echo "    ers [id]"
+    echo "  deleting:"
     echo "    de - delete an entity"
     echo "    de [id]"
     echo "    da - delete an alias"
@@ -129,6 +138,20 @@ else
                             updated
                         from snippet
                         where entity_id = ${entity_id};"
+            ;;
+        "lrs")
+            echo "--list all relation snippets--"
+            if [ "$#" -eq "2" ]; then
+                relation_id="$2"
+            else
+                printf "enter relation id: "
+                read -r relation_id
+            fi
+            $TENDPSQL -c "select data as snippet,
+                            id,
+                            updated
+                        from relation_snippet
+                        where relation_id = ${relation_id};"
             ;;
         "lr")
             echo "--list relation--"
@@ -377,6 +400,25 @@ else
             #see above rant
             data=$(sed -r "s/'/''/g" </dev/stdin)
             $TENDPSQL -c "update snippet set data = '${data}' where id = ${id};"
+            ;;
+        "ers")
+            echo "--edit relation snippet--"
+            if [ "$#" -eq "2" ]; then
+                id="$2"
+            else
+                printf "enter id: "
+                read -r id
+            fi
+            $TENDPSQL -c "select data as snippet,
+                            id,
+                            entity_id_a,
+                            entity_id_b,
+                            updated
+                        from relation_snippet
+                        where id = ${id};"
+            #see above rant
+            data=$(sed -r "s/'/''/g" </dev/stdin)
+            $TENDPSQL -c "update relation_snippet set data = '${data}' where id = ${id};"
             ;;
         "de")
             echo "--delete entity--"
