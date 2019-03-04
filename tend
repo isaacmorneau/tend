@@ -369,10 +369,10 @@ else
                 printf "enter id b: "
                 read -r idb
             else
-                printf "enter id: "
-                read -r id
-                printf "enter name: "
-                read -r name
+                printf "enter id a: "
+                read -r ida
+                printf "enter id b: "
+                read -r idb
             fi
             $TENDPSQL -c "insert into relation (entity_id_a, entity_id_b) values ('${ida}', ${idb}) returning id;"
             ;;
