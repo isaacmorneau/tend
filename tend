@@ -92,7 +92,12 @@ else
                                 created
                             from entity
                             order by 1;"
-            PREVIEW="N=\$(echo {} | awk '{print \$1}') && [ -n \"\$N\" ] && [ \"\$N\" -eq \"\$N\" ] 2>/dev/null && tend lll \$N"
+            PREVIEW="N=\$(echo {} | awk '{print \$1}') && [ -n \"\$N\" ] && [ \"\$N\" -eq \"\$N\" ] 2>/dev/null && $TENDPSQL -c \"
+                        select id as id, name as data, updated as last_modified from alias where entity_id = \${N}
+                            union all
+                        select id, data, updated from snippet where entity_id = \${N}
+                            union all
+                        select id, data, updated from relation_snippet where id in (select id from relation where entity_id_a = \${N} or entity_id_b = \${N});\""
 
             SELECTED=$(FZF_DEFAULT_COMMAND="$TENDPSQL -c \"$MAIN_SQL\"" fzf --preview "$PREVIEW")
             N=$(echo $SELECTED | awk '{print $1}')
@@ -106,11 +111,15 @@ else
                 printf "enter entity id: "
                 read -r entity_id
             fi
-            $TENDPSQL -c "select * from entity where id = ${entity_id};"
-            $TENDPSQL -c "select id, name, updated from alias where entity_id = ${entity_id};"
-            $TENDPSQL -c "select id, data from snippet where entity_id = ${entity_id};"
-            $TENDPSQL -c "select id, entity_id_a, entity_id_b, updated from relation where entity_id_a = ${entity_id} or entity_id_b = ${entity_id};"
-            $TENDPSQL -c "select id, data from relation_snippet where id in (select id from relation where entity_id_a = ${entity_id} or entity_id_b = ${entity_id});"
+            $TENDPSQL -c "select id as id, 'e' as type, id::text as data, created as last_modified from entity where id = ${entity_id}
+                            union all
+                        select id, 'a', name, updated from alias where entity_id = ${entity_id}
+                            union all
+                        select id, 's', data, updated from snippet where entity_id = ${entity_id}
+                            union all
+                        select id, 'r', concat('a:', entity_id_a, ' b:',entity_id_b), updated from relation where entity_id_a = ${entity_id} or entity_id_b = ${entity_id}
+                            union all
+                        select id, 'rs', data, updated from relation_snippet where id in (select id from relation where entity_id_a = ${entity_id} or entity_id_b = ${entity_id}) order by 2, 1;"
             ;;
         "le")
             echo "--list entity--"
