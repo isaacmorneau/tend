@@ -43,9 +43,7 @@ if [ "$#" -eq "0" ]; then
 else
     case $1 in
         "qs")
-            $TENDPSQL -c "select count(*) as total_entities from entity;"
-            $TENDPSQL -c "select count(*) as total_aliases from alias;"
-            $TENDPSQL -c "select count(*) as total_snippets from snippet;"
+            $TENDPSQL -c "select count(*), 'entities' as type from entity union select count(*) as total, 'aliases' from alias union select count(*), 'snippets' from snippet;"
             ;;
         "le")
             echo "--list entity--"
