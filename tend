@@ -10,9 +10,13 @@ if [ "$#" -eq "0" ]; then
     echo "commands:"
     echo "    qs - quick stats"
     echo "    qs"
+    echo "    fzf - fzf backed exploring"
+    echo "    fzf"
     echo "  listing:"
     echo "    le - list entity"
     echo "    le [id]"
+    echo "    lll - list long long"
+    echo "    lll [id]"
     echo "    lel - list entity long"
     echo "    lel [id]"
     echo "    la - list all aliases for an entity"
@@ -79,6 +83,34 @@ else
                         select count(*), 'snippets' from snippet
                             union
                         select count(*), 'relation snippets' from relation_snippet;"
+            ;;
+        "fzf")
+            MAIN_SQL="select id,
+                                (select string_agg(name, ', ' order by name) from alias where entity_id = entity.id limit 4) as alias_list,
+                                (select count(*) from alias where entity_id = entity.id) as aliases,
+                                (select count(*) from snippet where entity_id = entity.id) as snippets,
+                                created
+                            from entity
+                            order by 1;"
+            PREVIEW="N=\$(echo {} | awk '{print \$1}') && [ -n \"\$N\" ] && [ \"\$N\" -eq \"\$N\" ] 2>/dev/null && tend lll \$N"
+
+            SELECTED=$(FZF_DEFAULT_COMMAND="$TENDPSQL -c \"$MAIN_SQL\"" fzf --preview "$PREVIEW")
+            N=$(echo $SELECTED | awk '{print $1}')
+            [ -n "$N" ] && [ "$N" -eq "$N" ] 2>/dev/null && tend lll $N
+            ;;
+        "lll")
+            echo "--list long long--"
+            if [ "$#" -eq "2" ]; then
+                entity_id="$2"
+            else
+                printf "enter entity id: "
+                read -r entity_id
+            fi
+            $TENDPSQL -c "select * from entity where id = ${entity_id};"
+            $TENDPSQL -c "select id, name, updated from alias where entity_id = ${entity_id};"
+            $TENDPSQL -c "select id, data from snippet where entity_id = ${entity_id};"
+            $TENDPSQL -c "select id, entity_id_a, entity_id_b, updated from relation where entity_id_a = ${entity_id} or entity_id_b = ${entity_id};"
+            $TENDPSQL -c "select id, data from relation_snippet where id in (select id from relation where entity_id_a = ${entity_id} or entity_id_b = ${entity_id});"
             ;;
         "le")
             echo "--list entity--"
