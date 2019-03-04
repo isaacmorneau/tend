@@ -92,12 +92,14 @@ else
                                 created
                             from entity
                             order by 1;"
-            PREVIEW="N=\$(echo {} | awk '{print \$1}') && [ -n \"\$N\" ] && [ \"\$N\" -eq \"\$N\" ] 2>/dev/null && $TENDPSQL -c \"
-                        select id as id, name as data, updated as last_modified from alias where entity_id = \${N}
+
+            PREVIEW_SQL="select id as id, name as data, updated as last_modified from alias where entity_id = \${N}
                             union all
                         select id, data, updated from snippet where entity_id = \${N}
                             union all
-                        select id, data, updated from relation_snippet where id in (select id from relation where entity_id_a = \${N} or entity_id_b = \${N});\""
+                        select id, data, updated from relation_snippet where id in (select id from relation where entity_id_a = \${N} or entity_id_b = \${N});"
+
+            PREVIEW="N=\$(echo {} | awk '{print \$1}') && [ -n \"\$N\" ] && [ \"\$N\" -eq \"\$N\" ] 2>/dev/null && $TENDPSQL -c \"$PREVIEW_SQL\""
 
             SELECTED=$(FZF_DEFAULT_COMMAND="$TENDPSQL -c \"$MAIN_SQL\"" fzf --preview "$PREVIEW")
             N=$(echo $SELECTED | awk '{print $1}')
