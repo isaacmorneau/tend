@@ -137,16 +137,16 @@ else
                             from entity
                             order by 1;"
 
-            PREVIEW_SQL="select id as id, name as data, updated as last_modified from alias where entity_id = \${N}
+            PREVIEW_SQL="select id as id, name as data, updated as last_modified from alias where entity_id = \$N
                             union all
-                        select id, data, updated from snippet where entity_id = \${N}
+                        select id, data, updated from snippet where entity_id = \$N
                             union all
-                        select id, data, updated from relation_snippet where id in (select id from relation where entity_id_a = \${N} or entity_id_b = \${N});"
+                        select id, data, updated from relation_snippet where id in (select id from relation where entity_id_a = \$N or entity_id_b = \$N);"
 
-            PREVIEW="N=\$(echo {} | cut -d' ' -f1) && [ -n \"\$N\" ] && [ \"\$N\" -eq \"\$N\" ] 2>/dev/null && $TENDPSQL -c \"$PREVIEW_SQL\""
+            PREVIEW="N=\"{1}\" && N=\${N//[^0-9]/} && [ -n \"\$N\" ] && [ \"\$N\" -eq \"\$N\" ] 2>/dev/null && $TENDPSQL -c \"$PREVIEW_SQL\""
 
             SELECTED=$(FZF_DEFAULT_COMMAND="$TENDPSQL -c \"$MAIN_SQL\"" fzf --preview "$PREVIEW")
-            N=$(echo $SELECTED | cut -d ' ' -f1)
+            N=${SELECTED//[^0-9 ]*/ }
             [ -n "$N" ] && [ "$N" -eq "$N" ] 2>/dev/null && tend lll $N
             ;;
         "lll")
