@@ -9,9 +9,13 @@ a super simple bash wrapper so i can take notes
 commands:
     qs - quick stats
     qs
+    fzf - fzf backed exploring
+    fzf
   listing:
     le - list entity
     le [id]
+    lll - list long long
+    lll [id]
     lel - list entity long
     lel [id]
     la - list all aliases for an entity
