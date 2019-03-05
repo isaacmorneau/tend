@@ -25,6 +25,7 @@ function get_id () {
     fi
     echo "$id"
 }
+
 function get_text () {
     if [ "$#" -ge "1" ]; then
         text="$1"
@@ -38,8 +39,11 @@ function get_text () {
     echo "$text"
 }
 
+#no this isnt security yes i know you can do sql injections here (youre running this locally you have a damn shell)
+#this this is because i dont want to have to sanitize it manually if i want to say shove json into the db
 function get_stdin () {
-    sed -r "s/'/''/g" </dev/stdin
+    data=$(</dev/stdin)
+    echo "${data//\'/\'\'}"
 }
 
 if [ "$#" -eq "0" ]; then
@@ -139,10 +143,10 @@ else
                             union all
                         select id, data, updated from relation_snippet where id in (select id from relation where entity_id_a = \${N} or entity_id_b = \${N});"
 
-            PREVIEW="N=\$(echo {} | awk '{print \$1}') && [ -n \"\$N\" ] && [ \"\$N\" -eq \"\$N\" ] 2>/dev/null && $TENDPSQL -c \"$PREVIEW_SQL\""
+            PREVIEW="N=\$(echo {} | cut -d' ' -f1) && [ -n \"\$N\" ] && [ \"\$N\" -eq \"\$N\" ] 2>/dev/null && $TENDPSQL -c \"$PREVIEW_SQL\""
 
             SELECTED=$(FZF_DEFAULT_COMMAND="$TENDPSQL -c \"$MAIN_SQL\"" fzf --preview "$PREVIEW")
-            N=$(echo $SELECTED | awk '{print $1}')
+            N=$(echo $SELECTED | cut -d ' ' -f1)
             [ -n "$N" ] && [ "$N" -eq "$N" ] 2>/dev/null && tend lll $N
             ;;
         "lll")
@@ -334,16 +338,12 @@ else
         "as")
             echo "--add snippet--"
             id=$(get_id "$@")
-            #no this isnt security yes i know you can do sql injections here (youre running this locally you have a damn shell)
-            #this this is because i dont want to have to sanitize it manually if i want to say shove json into the db
             data=$(get_stdin)
             $TENDPSQL -c "insert into snippet (data,entity_id) values ('${data}', ${id}) returning id;"
             ;;
         "ars")
             echo "--add relation snippet--"
             id=$(get_id "$@")
-            #no this isnt security yes i know you can do sql injections here (youre running this locally you have a damn shell)
-            #this this is because i dont want to have to sanitize it manually if i want to say shove json into the db
             data=$(get_stdin)
             $TENDPSQL -c "insert into relation_snippet (data, relation_id) values ('${data}', ${id}) returning id;"
             ;;
@@ -369,7 +369,6 @@ else
                             updated
                         from snippet
                         where id = ${id};"
-            #see above rant
             data=$(get_stdin)
             $TENDPSQL -c "update snippet set data = '${data}' where id = ${id};"
             ;;
@@ -383,7 +382,6 @@ else
                             updated
                         from relation_snippet
                         where id = ${id};"
-            #see above rant
             data=$(get_stdin)
             $TENDPSQL -c "update relation_snippet set data = '${data}' where id = ${id};"
             ;;
