@@ -39,8 +39,8 @@ function get_text () {
 #no this isnt security yes i know you can do sql injections here (youre running this locally you have a damn shell)
 #this this is because i dont want to have to sanitize it manually if i want to say shove json into the db
 function get_stdin () {
-    $1=$(</dev/stdin)
-    $1="${1//\'/\'\'}"
+    declare -r tmp=$(</dev/stdin)
+    echo "${tmp//\'/\'\'}"
 }
 
 if [ "$#" -eq "0" ]; then
@@ -337,13 +337,13 @@ else
         "as")
             echo "--add snippet--"
             get_id id "$@"
-            get_stdin data
+            data=$(get_stdin)
             $TENDPSQL -c "insert into snippet (data,entity_id) values ('${data}', ${id}) returning id;"
             ;;
         "ars")
             echo "--add relation snippet--"
             get_id id "$@"
-            get_stdin data
+            data=$(get_stdin)
             $TENDPSQL -c "insert into relation_snippet (data, relation_id) values ('${data}', ${id}) returning id;"
             ;;
         "ea")
