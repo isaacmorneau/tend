@@ -6,44 +6,41 @@ fi
 
 #helpers for cleaner code
 
-tout="/proc/$$/fd/1"
-terr="/proc/$$/fd/2"
-
 function get_id () {
-    if [ "$#" -ge "1" ] && [ -n "$1" ] && [ -z "${1//[0-9]/}" ]; then
-        id=$1
+    if [ "$#" -ge "2" ] && [ -n "$2" ] && [ -z "${2//[0-9]/}" ]; then
+        eval $1=$2
     else
         while true
         do
-            printf "enter id: " > $tout
+            printf "enter id: "
             read -r id
             if [ -n "$id" ] && [ -z "${id//[0-9]/}" ]; then
                 break
             fi
-            echo "please enter integers only" 1>$terr
+            echo "please enter integers only" 1>&2
         done
+        eval $1=$id
     fi
-    echo "$id"
 }
 
 function get_text () {
-    if [ "$#" -ge "1" ]; then
-        text="$1"
+    if [ "$#" -ge "2" ]; then
+        eval $1="$2"
     else
         while [ -z "$text" ]
         do
-            printf "enter text: " > $tout
+            printf "enter text: "
             read -r text
         done
+        eval $1="$text"
     fi
-    echo "$text"
 }
 
 #no this isnt security yes i know you can do sql injections here (youre running this locally you have a damn shell)
 #this this is because i dont want to have to sanitize it manually if i want to say shove json into the db
 function get_stdin () {
-    data=$(</dev/stdin)
-    echo "${data//\'/\'\'}"
+    $1=$(</dev/stdin)
+    $1="${1//\'/\'\'}"
 }
 
 if [ "$#" -eq "0" ]; then
@@ -153,7 +150,7 @@ else
             ;;
         "lll")
             echo "--list long long--"
-            entity_id=$(get_id "$@")
+            get_id entity_id "$@"
             $TENDPSQL -c "select id as id, 'e' as type, id::text as data, created as last_modified from entity where id = ${entity_id}
                             union all
                         select id, 'a', name, updated from alias where entity_id = ${entity_id}
@@ -167,7 +164,7 @@ else
         "le")
             echo "--list entity--"
             if [ "$#" -eq "2" ]; then
-                id=$(get_id "$@")
+                get_id id "$@"
                 $TENDPSQL -c "select * from entity where id = ${2};"
             else
                 $TENDPSQL -c "select * from entity;"
@@ -176,7 +173,7 @@ else
         "lel")
             echo "--list entity long--"
             if [ "$#" -eq "2" ]; then
-                id=$(get_id "$@")
+                get_id id "$@"
                 $TENDPSQL -c "select id,
                                 (select string_agg(name, ', ' order by name) from alias where entity_id = entity.id limit 4) as alias_list,
                                 (select count(*) from alias where entity_id = entity.id) as aliases,
@@ -197,7 +194,7 @@ else
             ;;
         "la")
             echo "--list all aliases--"
-            entity_id=$(get_id "$@")
+            get_id entity_id "$@"
             $TENDPSQL -c "select name,
                             id,
                             updated
@@ -206,7 +203,7 @@ else
             ;;
         "ls")
             echo "--list all snippets--"
-            entity_id=$(get_id "$@")
+            get_id entity_id "$@"
             $TENDPSQL -c "select data as snippet,
                             id,
                             updated
@@ -215,7 +212,7 @@ else
             ;;
         "lrs")
             echo "--list all relation snippets--"
-            relation_id=$(get_id "$@")
+            get_id relation_id "$@"
             $TENDPSQL -c "select data as snippet,
                             id,
                             updated
@@ -224,7 +221,7 @@ else
             ;;
         "lr")
             echo "--list relation--"
-            id=$(get_id "$@")
+            get_id id "$@"
             $TENDPSQL -c "select id,
                             entity_id_a,
                             entity_id_b,
@@ -234,7 +231,7 @@ else
             ;;
         "lrl")
             echo "--list relation long--"
-            id=$(get_id "$@")
+            get_id id "$@"
             $TENDPSQL -c "select id,
                             entity_id_a,
                                 (select string_agg(name, ', ' order by name) from alias where entity_id = entity_id_a limit 4) as alias_list_a,
@@ -246,7 +243,7 @@ else
             ;;
         "fa")
             echo "--find entity--"
-            name=$(get_text "$@")
+            get_text name "$@"
             $TENDPSQL -c "select name,
                             id,
                             entity_id,
@@ -257,7 +254,7 @@ else
             ;;
         "fal")
             echo "--find entity--"
-            name=$(get_text "$@")
+            get_text name "$@"
             $TENDPSQL -c "select a.name,
                             a.id,
                             a.entity_id,
@@ -274,7 +271,7 @@ else
             ;;
         "fr")
             echo "--find relation--"
-            entity_id=$(get_id "$@")
+            get_id entity_id "$@"
             $TENDPSQL -c "select id,
                             entity_id_a,
                             entity_id_b,
@@ -285,7 +282,7 @@ else
             ;;
         "frl")
             echo "--find relation--"
-            entity_id=$(get_id "$@")
+            get_id entity_id "$@"
             $TENDPSQL -c "select id,
                             entity_id_a,
                                 (select string_agg(name, ', ' order by name) from alias where entity_id = entity_id_a limit 4) as alias_list_a,
@@ -298,7 +295,7 @@ else
             ;;
         "fs")
             echo "--find snippet--"
-            string=$(get_text "$@")
+            get_text string "$@"
             $TENDPSQL -c "select data as snippet,
                             id,
                             entity_id,
@@ -308,7 +305,7 @@ else
             ;;
         "frs")
             echo "--find relation snippet--"
-            string=$(get_text "$@")
+            get_text string "$@"
             $TENDPSQL -c "select data as snippet,
                             id,
                             relation_id,
@@ -318,40 +315,40 @@ else
             ;;
         "ae")
             echo "--add entity and alias--"
-            name=$(get_text "$@")
+            get_text name "$@"
             $TENDPSQL -c "insert into entity default values;
                             insert into alias (name) values ('${name}');
                             select currval('entity_id_seq');"
             ;;
         "aa")
             echo "--add alias--"
-            id=$(get_id "$@")
+            get_id id "$@"
             shift 1
-            name=$(get_text "$@")
+            get_text name "$@"
             $TENDPSQL -c "insert into alias (name, entity_id) values ('${name}', ${id}) returning id;"
             ;;
         "ar")
             echo "--add relation--"
-            ida=$(get_id "$@")
+            get_id ida "$@"
             shift 1
-            idb=$(get_id "$@")
+            get_id idb "$@"
             $TENDPSQL -c "insert into relation (entity_id_a, entity_id_b) values ('${ida}', ${idb}) returning id;"
             ;;
         "as")
             echo "--add snippet--"
-            id=$(get_id "$@")
-            data=$(get_stdin)
+            get_id id "$@"
+            get_stdin data
             $TENDPSQL -c "insert into snippet (data,entity_id) values ('${data}', ${id}) returning id;"
             ;;
         "ars")
             echo "--add relation snippet--"
-            id=$(get_id "$@")
-            data=$(get_stdin)
+            get_id id "$@"
+            get_stdin data
             $TENDPSQL -c "insert into relation_snippet (data, relation_id) values ('${data}', ${id}) returning id;"
             ;;
         "ea")
             echo "--edit alias--"
-            id=$(get_id "$@")
+            get_id id "$@"
             shift 1
             $TENDPSQL -c "select name,
                             id,
@@ -359,12 +356,12 @@ else
                             updated
                         from alias
                         where id = ${id};"
-            string=$(get_text "$@")
+            get_text string "$@"
             $TENDPSQL -c "update alias set name = '${string}' where id = ${id};"
             ;;
         "es")
             echo "--edit snippet--"
-            id=$(get_id "$@")
+            get_id id "$@"
             $TENDPSQL -c "select data as snippet,
                             id,
                             entity_id,
@@ -376,7 +373,7 @@ else
             ;;
         "ers")
             echo "--edit relation snippet--"
-            id=$(get_id "$@")
+            get_id id "$@"
             $TENDPSQL -c "select data as snippet,
                             id,
                             entity_id_a,
@@ -389,27 +386,27 @@ else
             ;;
         "de")
             echo "--delete entity--"
-            id=$(get_id "$@")
+            get_id id "$@"
             $TENDPSQL -c "delete from entity where id = ${id};"
             ;;
         "da")
             echo "--delete alias--"
-            id=$(get_id "$@")
+            get_id id "$@"
             $TENDPSQL -c "delete from alias where id = ${id};"
             ;;
         "ds")
             echo "--delete snippet--"
-            id=$(get_id "$@")
+            get_id id "$@"
             $TENDPSQL -c "delete from snippet where id = ${id};"
             ;;
         "dr")
             echo "--delete relation--"
-            id=$(get_id "$@")
+            get_id id "$@"
             $TENDPSQL -c "delete from relation where id = ${id};"
             ;;
         "drs")
             echo "--delete relation snippet--"
-            id=$(get_id "$@")
+            get_id id "$@"
             $TENDPSQL -c "delete from relation_snippet where id = ${id};"
             ;;
         *)
