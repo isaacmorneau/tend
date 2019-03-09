@@ -23,16 +23,17 @@ function get_id () {
     fi
 }
 
+tout="/proc/$$/fd/1"
 function get_text () {
-    if [ "$#" -ge "2" ]; then
-        eval $1="$2"
+    if [ "$#" -ge "1" ]; then
+        echo "$1"
     else
         while [ -z "$text" ]
         do
-            printf "enter text: "
+            printf "enter text: ">$tout
             read -r text
         done
-        eval $1="$text"
+        echo "$text"
     fi
 }
 
@@ -243,7 +244,7 @@ else
             ;;
         "fa")
             echo "--find entity--"
-            get_text name "$@"
+            name=$(get_text "$@")
             $TENDPSQL -c "select name,
                             id,
                             entity_id,
@@ -254,7 +255,7 @@ else
             ;;
         "fal")
             echo "--find entity--"
-            get_text name "$@"
+            name=$(get_text "$@")
             $TENDPSQL -c "select a.name,
                             a.id,
                             a.entity_id,
@@ -295,7 +296,7 @@ else
             ;;
         "fs")
             echo "--find snippet--"
-            get_text string "$@"
+            string=$(get_text "$@")
             $TENDPSQL -c "select data as snippet,
                             id,
                             entity_id,
@@ -305,7 +306,7 @@ else
             ;;
         "frs")
             echo "--find relation snippet--"
-            get_text string "$@"
+            string=$(get_text "$@")
             $TENDPSQL -c "select data as snippet,
                             id,
                             relation_id,
@@ -315,7 +316,7 @@ else
             ;;
         "ae")
             echo "--add entity and alias--"
-            get_text name "$@"
+            name=$(get_text "$@")
             $TENDPSQL -c "insert into entity default values;
                             insert into alias (name) values ('${name}');
                             select currval('entity_id_seq');"
@@ -324,7 +325,7 @@ else
             echo "--add alias--"
             get_id id "$@"
             shift 1
-            get_text name "$@"
+            name=$(get_text "$@")
             $TENDPSQL -c "insert into alias (name, entity_id) values ('${name}', ${id}) returning id;"
             ;;
         "ar")
@@ -356,7 +357,7 @@ else
                             updated
                         from alias
                         where id = ${id};"
-            get_text string "$@"
+            string=$(get_text "$@")
             $TENDPSQL -c "update alias set name = '${string}' where id = ${id};"
             ;;
         "es")
