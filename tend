@@ -124,7 +124,8 @@ else
                             union
                         select count(*), 'snippets' from snippet
                             union
-                        select count(*), 'relation snippets' from relation_snippet;"
+                        select count(*), 'relation snippets' from relation_snippet
+                        order by 2;"
             ;;
         "fzf")
             MAIN_SQL="select id,
@@ -139,7 +140,8 @@ else
                             union all
                         select id, data, updated from snippet where entity_id = \$N
                             union all
-                        select id, data, updated from relation_snippet where id in (select id from relation where entity_id_a = \$N or entity_id_b = \$N);"
+                        select id, data, updated from relation_snippet where id in (select id from relation where entity_id_a = \$N or entity_id_b = \$N)
+                            order by 1;"
 
             PREVIEW="N=\"{1}\" && N=\${N//[^0-9]/} && [ -n \"\$N\" ] && [ \"\$N\" -eq \"\$N\" ] 2>/dev/null && $TENDPSQL -c \"$PREVIEW_SQL\""
 
