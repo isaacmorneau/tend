@@ -351,39 +351,50 @@ else
             echo "--edit alias--"
             get_id id "$@"
             shift 1
-            $TENDPSQL -c "select name,
-                            id,
-                            entity_id,
-                            updated
+            tmpfile=$(mktemp "/tmp/XXXX_id_$id")
+            $TENDPSQL -tAqc "select name
                         from alias
-                        where id = ${id};"
-            string=$(get_text "$@")
-            $TENDPSQL -c "update alias set name = '${string}' where id = ${id};"
+                        where id = ${id};" > $tmpfile
+            $EDITOR $tmpfile
+            data=$(<$tmpfile)
+            rm $tmpfile
+            if [ -n "$data" ]; then
+                $TENDPSQL -c "update alias set name = '${data}' where id = ${id};"
+            else
+                echo "cannot update, data blank" 1>&2
+            fi
             ;;
         "es")
             echo "--edit snippet--"
             get_id id "$@"
-            $TENDPSQL -c "select data as snippet,
-                            id,
-                            entity_id,
-                            updated
+            tmpfile=$(mktemp "/tmp/XXXX_id_$id")
+            $TENDPSQL -tAqc "select data
                         from snippet
-                        where id = ${id};"
-            data=$(get_stdin)
-            $TENDPSQL -c "update snippet set data = '${data}' where id = ${id};"
+                        where id = ${id};" > $tmpfile
+            $EDITOR $tmpfile
+            data=$(<$tmpfile)
+            rm $tmpfile
+            if [ -n "$data" ]; then
+                $TENDPSQL -c "update snippet set data = '${data}' where id = ${id};"
+            else
+                echo "cannot update, data blank" 1>&2
+            fi
             ;;
         "ers")
             echo "--edit relation snippet--"
             get_id id "$@"
-            $TENDPSQL -c "select data as snippet,
-                            id,
-                            entity_id_a,
-                            entity_id_b,
-                            updated
+            tmpfile=$(mktemp "/tmp/XXXX_id_$id")
+            $TENDPSQL -tAqc "select data
                         from relation_snippet
-                        where id = ${id};"
-            data=$(get_stdin)
-            $TENDPSQL -c "update relation_snippet set data = '${data}' where id = ${id};"
+                        where id = ${id};" > $tmpfile
+            $EDITOR $tmpfile
+            data=$(<$tmpfile)
+            rm $tmpfile
+            if [ -n "$data" ]; then
+                $TENDPSQL -c "update relation_snippet set data = '${data}' where id = ${id};"
+            else
+                echo "cannot update, data blank" 1>&2
+            fi
             ;;
         "de")
             echo "--delete entity--"
