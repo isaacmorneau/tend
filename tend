@@ -146,7 +146,7 @@ else
             PREVIEW="N=\"{1}\" && N=\${N//[^0-9]/} && [ -n \"\$N\" ] && [ \"\$N\" -eq \"\$N\" ] 2>/dev/null && $TENDPSQL -c \"$PREVIEW_SQL\""
 
             SELECTED=$(FZF_DEFAULT_COMMAND="$TENDPSQL -c \"$MAIN_SQL\"" fzf\
-                --preview "$PREVIEW" --preview-window "down:50%" --header-lines=2 --no-bold +m --cycle\
+                --preview "$PREVIEW" --preview-window "down:50%" --header-lines=2 --no-bold +m --black --tabstop=4 --cycle\
                 --color="dark,fg:#b5d0db,fg:#b6d0db,fg+:#c250e5,bg+:#282c34,hl:#ff4c4c,hl+:#ff4c4c,info:#b6d0db,pointer:#b6d9db,border:#b6d9db,header:#b6d0db")
             N=${SELECTED//[^0-9 ]*/ }
             [ -n "$N" ] && [ "$N" -eq "$N" ] 2>/dev/null && tend lll $N
