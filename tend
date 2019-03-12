@@ -178,7 +178,7 @@ else
             if [ "$#" -eq "2" ]; then
                 get_id id "$@"
                 $TENDPSQL -c "select id,
-                                (select string_agg(name, ', ' order by name) from alias where entity_id = entity.id limit 4) as alias_list,
+                                (select substring(string_agg(name, ', ' order by name) from 0 for 40) from alias where entity_id = entity.id limit 4) as alias_list,
                                 (select count(*) from alias where entity_id = entity.id) as aliases,
                                 (select count(*) from snippet where entity_id = entity.id) as snippets,
                                 created
@@ -187,7 +187,7 @@ else
                             order by 1;"
             else
                 $TENDPSQL -c "select id,
-                                (select string_agg(name, ', ' order by name) from alias where entity_id = entity.id limit 4) as alias_list,
+                                (select substring(string_agg(name, ', ' order by name) from 0 for 40) from alias where entity_id = entity.id limit 4) as alias_list,
                                 (select count(*) from alias where entity_id = entity.id) as aliases,
                                 (select count(*) from snippet where entity_id = entity.id) as snippets,
                                 created
