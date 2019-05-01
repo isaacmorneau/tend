@@ -361,7 +361,7 @@ else
             data=$(<$tmpfile)
             rm $tmpfile
             if [ -n "$data" ]; then
-                $TENDPSQL -c "update alias set name = '${data}' where id = ${id};"
+                $TENDPSQL -c "update alias set name = '${data//\'/\'\'}' where id = ${id};"
             else
                 echo "cannot update, data blank" 1>&2
             fi
@@ -377,7 +377,7 @@ else
             data=$(<$tmpfile)
             rm $tmpfile
             if [ -n "$data" ]; then
-                $TENDPSQL -c "update snippet set data = '${data}' where id = ${id};"
+                $TENDPSQL -c "update snippet set data = '${data//\'/\'\'}' where id = ${id};"
             else
                 echo "cannot update, data blank" 1>&2
             fi
@@ -393,7 +393,7 @@ else
             data=$(<$tmpfile)
             rm $tmpfile
             if [ -n "$data" ]; then
-                $TENDPSQL -c "update relation_snippet set data = '${data}' where id = ${id};"
+                $TENDPSQL -c "update relation_snippet set data = '${data//\'/\'\'}' where id = ${id};"
             else
                 echo "cannot update, data blank" 1>&2
             fi
