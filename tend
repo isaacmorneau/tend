@@ -166,7 +166,7 @@ else
             ;;
         "le")
             echo "--list entity--"
-            if [ "$#" -eq "2" ]; then
+            if [ "$#" -eq "1" ]; then
                 get_id id "$@"
                 $TENDPSQL -c "select * from entity where id = ${2};"
             else
@@ -175,7 +175,7 @@ else
             ;;
         "lel")
             echo "--list entity long--"
-            if [ "$#" -eq "2" ]; then
+            if [ "$#" -eq "1" ]; then
                 get_id id "$@"
                 $TENDPSQL -c "select id,
                                 (select substring(string_agg(name, ', ' order by name) from 0 for 40) from alias where entity_id = entity.id limit 4) as alias_list,
