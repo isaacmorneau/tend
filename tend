@@ -140,7 +140,7 @@ else
                             union all
                         select id, data, updated from snippet where entity_id = \$N
                             union all
-                        select id, data, updated from relation_snippet where id in (select id from relation where entity_id_a = \$N or entity_id_b = \$N)
+                        select id, data, updated from relation_snippet where relation_id in (select id from relation where entity_id_a = \$N or entity_id_b = \$N)
                             order by 1;"
 
             PREVIEW="N=\"{1}\" && N=\${N//[^0-9]/} && [ -n \"\$N\" ] && [ \"\$N\" -eq \"\$N\" ] 2>/dev/null && $TENDPSQL -c \"$PREVIEW_SQL\""
@@ -162,7 +162,7 @@ else
                             union all
                         select id, 'r', concat('a:', entity_id_a, ' b:',entity_id_b), updated from relation where entity_id_a = ${entity_id} or entity_id_b = ${entity_id}
                             union all
-                        select id, 'rs', data, updated from relation_snippet where id in (select id from relation where entity_id_a = ${entity_id} or entity_id_b = ${entity_id}) order by 2, 1;"
+                        select id, 'rs', data, updated from relation_snippet where relation_id in (select id from relation where entity_id_a = ${entity_id} or entity_id_b = ${entity_id}) order by 2, 1;"
             ;;
         "le")
             echo "--list entity--"
