@@ -79,6 +79,13 @@ all the commands arguments in `[ ]` are optional and will be prompted for
 - postgresql installed and running locally
 - your user is allowed to access it
 
+## variants
+Some people have been interested to make their own versions of it. Feel free to open a MR to get yours listed here as well.
+
+| Name | Language | DB |
+| --- | --- | --- |
+| (rtend)[https://github.com/Rudo2204/rtend] | Rust | SQLite |
+
 
 just runing the sql file in a database titled tend will work fine
 otherwise TENDPSQL can be set to override the connection command as needed
