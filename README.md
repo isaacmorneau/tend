@@ -84,7 +84,7 @@ Some people have been interested to make their own versions of it. Feel free to 
 
 | Name | Language | DB |
 | --- | --- | --- |
-| (rtend)[https://github.com/Rudo2204/rtend] | Rust | SQLite |
+| [rtend](https://github.com/Rudo2204/rtend) | Rust | SQLite |
 
 
 just runing the sql file in a database titled tend will work fine
